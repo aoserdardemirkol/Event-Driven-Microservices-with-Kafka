@@ -55,7 +55,6 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public String createProductSync(CreateProductRestModel productRestModel) throws Exception {
-
         String productId = UUID.randomUUID().toString();
 
         // TODO: Persist Product Details into database table before publishing an Event
@@ -65,20 +64,22 @@ public class ProductServiceImpl implements ProductService {
                 productRestModel.getPrice(),
                 productRestModel.getQuantity());
 
-        LOGGER.info("********** Before publishig a ProductCreatedEvent");
+        LOGGER.info("********** Before publishing a ProductCreatedEvent");
 
-        ProducerRecord<String, ProductCreatedEvent> record =
-                new ProducerRecord<>("product-created-events-topic", productId, productCreatedEvent);
+        ProducerRecord<String, ProductCreatedEvent> record = new ProducerRecord<>(
+                "product-created-events-topic",
+                productId,
+                productCreatedEvent);
         record.headers().add("messageId", UUID.randomUUID().toString().getBytes());
 
         SendResult<String, ProductCreatedEvent> result =
                 kafkaTemplate.send(record).get();
 
         LOGGER.info("********** Partition: {}", result.getRecordMetadata().partition());
-        LOGGER.info("********** Topic {}", result.getRecordMetadata().topic());
-        LOGGER.info("********** Offset {}", result.getRecordMetadata().offset());
+        LOGGER.info("********** Topic: {}", result.getRecordMetadata().topic());
+        LOGGER.info("********** Offset: {}", result.getRecordMetadata().offset());
 
-        LOGGER.info("********** Returning product id {}", productId);
+        LOGGER.info("********** Returning product id");
 
         return productId;
     }
